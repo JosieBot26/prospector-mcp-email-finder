@@ -1,46 +1,27 @@
 {
   "name": "prospector-mcp",
   "version": "1.0.0",
-  "description": "B2B email finder and verification MCP server. Find, verify, and enrich business email addresses without paid API subscriptions. Self-contained DNS/SMTP verification.",
+  "description": "MCP server created with MCPize",
   "type": "module",
-  "bin": {
-    "prospector-mcp": "./src/index.js"
-  },
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "start:http": "node src/http-server.js",
-    "test": "node test/test-verification.js"
-  },
-  "keywords": [
-    "mcp",
-    "email-finder",
-    "email-verification",
-    "lead-generation",
-    "b2b",
-    "hunter-io-alternative",
-    "smtp-verification",
-    "model-context-protocol",
-    "ai-tools",
-    "prospecting"
-  ],
-  "author": "MyceliumLabs",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/JosieBot26/prospector-mcp-email-finder"
-  },
-  "homepage": "https://github.com/JosieBot26/prospector-mcp-email-finder#readme",
-  "engines": {
-    "node": ">=18.0.0"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "zod": "^3.24.0"
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "chalk": "^5.4.1",
+    "express": "^5.1.0",
+    "zod": "^4.0.0"
   },
-  "files": [
-    "src/",
-    "README.md",
-    "LICENSE"
-  ]
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.21",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }

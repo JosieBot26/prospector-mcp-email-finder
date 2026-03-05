@@ -1,0 +1,46 @@
+# MCP Server Development Rules
+
+## Project Context
+This is an MCP (Model Context Protocol) server for MCPize hosting platform.
+Uses @modelcontextprotocol/sdk with Streamable HTTP transport.
+
+## Key Files
+- src/index.ts: Main server with tool registrations
+- mcpize.yaml: Deployment manifest
+- Dockerfile: Container configuration
+
+## Code Style
+- Use TypeScript with strict mode
+- Use Zod for schema validation
+- Use ES modules (import/export)
+- Async/await for all handlers
+
+## MCP Tool Registration Pattern
+```typescript
+server.registerTool(
+  "tool-name",
+  {
+    title: "Title",
+    description: "Description",
+    inputSchema: { param: z.string() },
+    outputSchema: { result: z.string() },
+  },
+  async ({ param }) => ({
+    content: [{ type: "text", text: JSON.stringify(output) }],
+    structuredContent: output,
+  })
+);
+```
+
+## Important
+- Always return both content and structuredContent
+- Use descriptive tool names (kebab-case)
+- Add .describe() to all Zod schema fields
+- Handle errors gracefully in handlers
+- Server runs on PORT env var (default 8080)
+- Health endpoint at /health
+- MCP endpoint at /mcp
+
+## Testing
+Run with: npm run dev
+Test with MCP Inspector: npx @anthropic-ai/mcp-inspector
