@@ -187,7 +187,22 @@ function createMcpServer() {
 
 // ── HTTP Server ──────────────────────────────────────────────
 
+// Session management: keep transport alive across requests
+const sessions = new Map();
+
 const httpServer = createServer(async (req, res) => {
+  // CORS headers for all requests
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
+  res.setHeader('Access-Control-Expose-Headers', 'mcp-session-id');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   // Health check
   if (req.url === '/health' && req.method === 'GET') {
     const stats = getGlobalStats();
@@ -198,10 +213,37 @@ const httpServer = createServer(async (req, res) => {
 
   // MCP endpoint
   if (req.url === '/mcp' || req.url === '/') {
+    const sessionId = req.headers['mcp-session-id'];
+
+    // Reuse existing session if available
+    if (sessionId && sessions.has(sessionId)) {
+      const transport = sessions.get(sessionId);
+      await transport.handleRequest(req, res);
+      return;
+    }
+
+    // New session
     const mcpServer = createMcpServer();
-    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => crypto.randomUUID() });
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => crypto.randomUUID(),
+    });
+
+    // Track session after connection
+    transport.onclose = () => {
+      if (transport.sessionId) sessions.delete(transport.sessionId);
+    };
+
     await mcpServer.connect(transport);
     await transport.handleRequest(req, res);
+
+    // Store session for reuse
+    if (transport.sessionId) {
+      sessions.set(transport.sessionId, transport);
+      // Clean up stale sessions after 30 minutes
+      setTimeout(() => {
+        sessions.delete(transport.sessionId);
+      }, 30 * 60 * 1000);
+    }
     return;
   }
 
