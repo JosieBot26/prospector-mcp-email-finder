@@ -454,6 +454,30 @@ server.registerTool(
 const app = express();
 app.use(express.json());
 
+// Well-known server card for Smithery discovery
+app.get("/.well-known/mcp/server-card.json", (_req: Request, res: Response) => {
+  res.status(200).json({
+    name: "Prospector",
+    description: "Free B2B email finder and verification MCP server. Find, verify, and enrich business emails without paid API subscriptions. Self-contained DNS/SMTP verification. Hunter.io alternative for AI agents.",
+    version: "1.0.0",
+    homepage: "https://github.com/JosieBot26/prospector-mcp-email-finder",
+    icon: "https://raw.githubusercontent.com/JosieBot26/prospector-mcp-email-finder/main/icon.png",
+    tools: [
+      { name: "verify_email", description: "Verify if an email address is valid and deliverable via DNS MX + SMTP handshake. Returns confidence score (0-100).", annotations: { readOnlyHint: true, openWorldHint: true } },
+      { name: "verify_emails_batch", description: "Verify multiple email addresses in batch (max 25). Returns status and score for each.", annotations: { readOnlyHint: true, openWorldHint: true } },
+      { name: "find_emails", description: "Find email addresses for a business. Scrapes website, generates pattern candidates, verifies via SMTP. Hunter.io replacement.", annotations: { readOnlyHint: true, openWorldHint: true } },
+      { name: "check_domain", description: "Quick check if a domain can receive email. Returns MX records and catch-all status.", annotations: { readOnlyHint: true, openWorldHint: true } },
+      { name: "usage_stats", description: "Check your current daily usage quota and remaining verifications.", annotations: { readOnlyHint: true, openWorldHint: false } },
+    ],
+    prompts: [
+      { name: "find-business-emails", description: "Find and verify email addresses for a business domain." },
+    ],
+    resources: [
+      { uri: "prospector://usage", name: "Usage Stats", description: "Current verification usage and quota information." },
+    ],
+  });
+});
+
 app.get("/health", (_req: Request, res: Response) => {
   const today = getToday();
   let totalClients = 0, totalVerifications = 0;
