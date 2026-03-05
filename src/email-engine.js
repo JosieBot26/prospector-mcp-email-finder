@@ -250,7 +250,7 @@ export async function scrapeEmailsFromWebsite(websiteUrl) {
   async function fetchPage(url) {
     try {
       const response = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Prospector/1.0; +https://github.com/JosieBot26/-prospector-mcp)' },
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Prospector/1.0; +https://github.com/JosieBot26/prospector-mcp-email-finder)' },
         signal: AbortSignal.timeout(12000),
         redirect: 'follow',
       });

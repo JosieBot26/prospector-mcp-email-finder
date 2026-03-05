@@ -28,9 +28,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JosieBot26/-prospector-mcp"
+    "url": "https://github.com/JosieBot26/prospector-mcp-email-finder"
   },
-  "homepage": "https://github.com/JosieBot26/-prospector-mcp#readme",
+  "homepage": "https://github.com/JosieBot26/prospector-mcp-email-finder#readme",
   "engines": {
     "node": ">=18.0.0"
   },
