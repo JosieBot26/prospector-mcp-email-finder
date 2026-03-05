@@ -274,9 +274,39 @@ const CLIENT_ID = process.env.PROSPECTOR_API_KEY || 'default';
 const CLIENT_TIER = process.env.PROSPECTOR_TIER || 'free';
 
 const server = new McpServer({
-  name: "prospector",
+  name: "Prospector",
   version: "1.0.0",
 });
+
+// ── Resource: usage stats ────────────────────────────────────
+
+server.resource(
+  "usage",
+  "prospector://usage",
+  {
+    description: "Current usage statistics including verifications used today, remaining quota, and tier information.",
+    mimeType: "application/json",
+  },
+  async () => ({
+    contents: [{ uri: "prospector://usage", text: JSON.stringify(getUsageStats(CLIENT_ID, CLIENT_TIER), null, 2) }],
+  })
+);
+
+// ── Prompt: find business emails ─────────────────────────────
+
+server.prompt(
+  "find-business-emails",
+  "Find and verify email addresses for a business. Provide a domain and optionally a contact name to generate pattern-based candidates.",
+  async (extra) => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: `Use the find_emails tool to discover and verify email addresses for a business. Ask the user for the business domain (e.g. acmecorp.com) and optionally a contact name (e.g. Jane Smith). Then summarize which emails are valid, risky, or invalid, and recommend the best email to use for outreach.`,
+      },
+    }],
+  })
+);
 
 // ── Tool: verify_email ───────────────────────────────────────
 
@@ -286,6 +316,7 @@ server.registerTool(
     title: "Verify Email",
     description: "Verify if an email address is valid and deliverable. Performs DNS MX lookup, SMTP handshake (without sending email), catch-all detection, and disposable domain filtering. Returns confidence score (0-100).",
     inputSchema: { email: z.string().email().describe("Email address to verify") },
+    annotations: { title: "Verify Email Address", readOnlyHint: true, openWorldHint: true },
   },
   async ({ email }) => {
     const q = checkQuota(CLIENT_ID, CLIENT_TIER, 1);
@@ -302,8 +333,9 @@ server.registerTool(
   "verify_emails_batch",
   {
     title: "Verify Emails Batch",
-    description: "Verify multiple email addresses in a single batch (max 25). Returns verification status and confidence score for each. Efficient for cleaning outreach lists.",
-    inputSchema: { emails: z.array(z.string().email()).max(25).describe("Email addresses to verify (max 25)") },
+    description: "Verify multiple email addresses in a single batch (max 25). Returns verification status and confidence score for each. Efficient for cleaning outreach lists before sending campaigns.",
+    inputSchema: { emails: z.array(z.string().email()).max(25).describe("Array of email addresses to verify, maximum 25 per batch") },
+    annotations: { title: "Batch Email Verification", readOnlyHint: true, openWorldHint: true },
   },
   async ({ emails }) => {
     const q = checkQuota(CLIENT_ID, CLIENT_TIER, emails.length);
@@ -334,12 +366,13 @@ server.registerTool(
   "find_emails",
   {
     title: "Find Emails",
-    description: "Find email addresses for a business. Scrapes their website for contact info, generates pattern-based candidates from a contact name, and verifies all via SMTP. Hunter.io replacement — no API key needed.",
+    description: "Find email addresses for a business. Scrapes their website for contact info, generates pattern-based candidates from a contact name, and verifies all discovered emails via SMTP handshake. Hunter.io replacement — no API key needed.",
     inputSchema: {
-      domain: z.string().describe('Business domain (e.g. "acmecorp.com")'),
-      website_url: z.string().url().optional().describe("Full website URL if different from https://domain"),
-      contact_name: z.string().optional().describe('Contact person name for pattern matching (e.g. "Jane Smith")'),
+      domain: z.string().describe('Business domain to search, e.g. "acmecorp.com"'),
+      website_url: z.string().url().optional().describe("Full website URL if different from https://domain, e.g. https://www.acmecorp.com"),
+      contact_name: z.string().optional().describe('Contact person full name for pattern-based email generation, e.g. "Jane Smith"'),
     },
+    annotations: { title: "Find Business Emails", readOnlyHint: true, openWorldHint: true },
   },
   async ({ domain, website_url, contact_name }) => {
     const url = website_url || `https://${domain}`;
@@ -386,8 +419,9 @@ server.registerTool(
   "check_domain",
   {
     title: "Check Domain",
-    description: "Quick check if a domain can receive email. Returns MX records and catch-all status. Does not count against quota.",
-    inputSchema: { domain: z.string().describe('Domain to check (e.g. "example.com")') },
+    description: "Quick check if a domain can receive email. Verifies DNS MX records exist and detects catch-all servers. Does not count against your verification quota. Use before find_emails to filter dead domains.",
+    inputSchema: { domain: z.string().describe('Domain to check for email capability, e.g. "acmecorp.com"') },
+    annotations: { title: "Check Domain Email Capability", readOnlyHint: true, openWorldHint: true },
   },
   async ({ domain }) => {
     const mx = await verifyMX(domain);
@@ -403,8 +437,9 @@ server.registerTool(
   "usage_stats",
   {
     title: "Usage Stats",
-    description: "Check your current daily usage quota, remaining verifications, and tier.",
+    description: "Check your current daily usage quota. Shows verifications used today, remaining allowance, pricing tier, and reset time.",
     inputSchema: {},
+    annotations: { title: "Check Usage Quota", readOnlyHint: true, openWorldHint: false },
   },
   async () => {
     const stats = getUsageStats(CLIENT_ID, CLIENT_TIER);
