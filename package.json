@@ -1,0 +1,46 @@
+{
+  "name": "prospector-mcp",
+  "version": "1.0.0",
+  "description": "B2B email finder and verification MCP server. Find, verify, and enrich business email addresses without paid API subscriptions. Self-contained DNS/SMTP verification.",
+  "type": "module",
+  "bin": {
+    "prospector-mcp": "./src/index.js"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:http": "node src/http-server.js",
+    "test": "node test/test-verification.js"
+  },
+  "keywords": [
+    "mcp",
+    "email-finder",
+    "email-verification",
+    "lead-generation",
+    "b2b",
+    "hunter-io-alternative",
+    "smtp-verification",
+    "model-context-protocol",
+    "ai-tools",
+    "prospecting"
+  ],
+  "author": "MyceliumLabs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JosieBot26/-prospector-mcp"
+  },
+  "homepage": "https://github.com/JosieBot26/-prospector-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.0"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
+}
