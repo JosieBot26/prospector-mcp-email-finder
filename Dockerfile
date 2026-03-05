@@ -31,6 +31,6 @@ RUN npm install --omit=dev --ignore-scripts
 USER node
 
 # Railway sets PORT dynamically — don't hardcode it
-EXPOSE 8080
+EXPOSE 3100
 
 CMD ["node", "dist/index.js"]

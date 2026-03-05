@@ -537,8 +537,8 @@ app.post("/mcp", async (req: Request, res: Response) => {
 // Start Server
 // ============================================================================
 
-const port = parseInt(process.env.PORT || "8080");
-app.listen(port, () => {
+const port = parseInt(process.env.PORT || "3100");
+app.listen(port, "0.0.0.0", () => {
   console.log();
   console.log(chalk.bold("Prospector MCP Server running on"), chalk.cyan(`http://localhost:${port}`));
   console.log(`  ${chalk.gray("Health:")} http://localhost:${port}/health`);
